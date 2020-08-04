@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Have your views rendered with DTML</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/have-your-views-rendered-with-dtml.html" rel="bookmark"
+           title="Permalink to Have your views rendered with DTML">Have your views rendered with DTML</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2008-08-16T19:23:00+02:00">
+                Published: Sam 16 août 2008
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/plone.html">Plone</a> </p>
+</footer><!-- /.post-info -->      <div class="section" id="id1">
+<h2>Have your views rendered with DTML</h2>
+<p>As we're supposed to kill the CMF skins layer in the Plone components, when
+tailoring the old style products to components, we put all static data
+(images, javascripts, stylesheets) in resources directories, python scripts to
+views and adpters, controller page templates to plone.app.form or
+plone.app.z3cform schemes, and so on...</p>
+<p>But the new style resource directory doesn't take care about DTML as it does
+for page templates. And for some kinds of stuffs like dynamic CSS/Javascript,
+or making a CSV file, DTML is yet the better suited than ZPT.</p>
+<p>Yes you can publish DTML based views/pages/viewlets. This is not obvious but
+not that much complicated. This small example shows how to add a stylesheet
+using the standard Plone <tt class="docutils literal">base_properties</tt> CSS data.</p>
+<p>First the ZCML bunch at .../browser/configure.zcml:</p>
+<div class="highlight"><pre><span></span><span class="nt">&lt;browser:page</span>
+  <span class="na">name=</span><span class="s">&quot;mystytles.css&quot;</span>
+  <span class="na">for=</span><span class="s">&quot;Products.CMFPlone.interfaces.IPloneSiteRoot&quot;</span>
+  <span class="na">class=</span><span class="s">&quot;.stylesheet.MyStylesheet&quot;</span>
+  <span class="na">permission=</span><span class="s">&quot;zope2.Public&quot;</span>
+<span class="nt">/&gt;</span>
+</pre></div>
+<p>So we'll have that sthylesheet published at <a class="reference external" href="http:/">http:/</a>/&lt;your-site&gt;/mystyles.css.</p>
+<p>Now the .../browser/stylesheet.py module:</p>
+<div class="highlight"><pre><span></span><span class="o">...</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">Globals</span> <span class="kn">import</span> <span class="n">DTMLFile</span>
+
+<span class="kn">from</span> <span class="nn">Products.Five.browser</span> <span class="kn">import</span> <span class="n">BrowserView</span>
+<span class="o">...</span>
+<span class="n">this_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
+
+<span class="n">templates_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">this_dir</span><span class="p">,</span> <span class="s1">&#39;templates&#39;</span><span class="p">)</span>
+<span class="c1"># Don&#39;t add &quot;.dtml&quot; to the file name though the file is &quot;mystyles.css.dtml&quot;</span>
+<span class="n">mystylesheet_dtml</span> <span class="o">=</span> <span class="n">DTMLFile</span><span class="p">(</span><span class="s1">&#39;mystyles.css&#39;</span><span class="p">,</span> <span class="n">templates_dir</span><span class="p">)</span>
+
+<span class="o">...</span>
+<span class="k">class</span> <span class="nc">MyStylesheet</span><span class="p">(</span><span class="n">BrowserView</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This view is published&quot;&quot;&quot;</span>
+
+        <span class="c1"># Wrap acquisition context to template</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">mystylesheet_dtml</span><span class="o">.</span><span class="n">__of__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">context</span><span class="p">)</span>
+
+        <span class="c1"># Note that you can provide other named args below you might need in</span>
+        <span class="c1"># your template</span>
+        <span class="k">return</span> <span class="n">template</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+</pre></div>
+<p>And finally our DTML template at .../browser/templates/mystyles.css.dtml</p>
+<div class="highlight"><pre><span></span>/* &lt;dtml-with &quot;context.base_properties&quot;&gt; (do not remove this :)
+&lt;dtml-let portal_url=&quot;context.absolute_url()&quot;&gt; (do not remove this :)
+*/
+
+.silly {
+  color: &amp;dtml-discreetColor;;
+}
+.foo {
+  background: &amp;dtml-portal_url;/some-image.gif;
+}
+
+/* &lt;/dtml-let&gt;&lt;/dtml-with&gt; (do not remove this :) */
+</pre></div>
+<p>You just need to add &quot;mystyles.css&quot; to the Plone CSS registry but that's
+another story. That's all folks.</p>
+<p>Note that you could prefer using
+<a class="reference external" href="http://pypi.python.org/pypi/z3c.zrtresource">z3c.zrtresource</a> if
+you're bleeding-edge oriented developer.</p>
+</div>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'have-your-views-rendered-with-dtml.html';
+        var disqus_url = 'http://glenfant.github.io/have-your-views-rendered-with-dtml.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

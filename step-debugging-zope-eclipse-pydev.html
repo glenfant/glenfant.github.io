@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Step debugging a Zope 2 / Plone instance with Eclipse + PyDev</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/step-debugging-zope-eclipse-pydev.html" rel="bookmark"
+           title="Permalink to Step debugging a Zope 2 / Plone instance with Eclipse + PyDev">Step debugging a Zope 2 / Plone instance with Eclipse + PyDev</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2011-11-07T01:02:00+01:00">
+                Published: Lun 07 novembre 2011
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/plone.html">Plone</a> <a href="http://glenfant.github.io/tag/zope-2.html">Zope 2</a> </p>
+</footer><!-- /.post-info -->      <p>Hi,</p>
+<p>Most power users mays already know this. But this is a real
+enlightenment for newbies who are stuck with the command line pdb
+utility. Even for experienced developper as I am... supposed to be, this
+is a real advantage to have on screen at the same time the source code,
+with breakpoints in the margin of it, the inspector for your global and
+local variables, the access to the call stack and execution frames.</p>
+<p>Start reading <a class="reference external" href="http://www.pydev.org/manual_adv_remote_debugger.html">the fine manual
+here</a> and come
+back reading how to get this in Zope 2.</p>
+<p>Of course I assume you have a recent Eclipse (Indigo) and Pydev (2.2.4)</p>
+<p>Find in your Eclipse software directory the full path of the directory
+that contains <tt class="docutils literal">pydevd.py</tt>. In other words :</p>
+<div class="highlight"><pre><span></span><span class="gp">$</span> <span class="nb">cd</span> /your/eclipse/root
+<span class="gp">$</span> find . -name <span class="s1">&#39;pydevd.py&#39;</span>
+</pre></div>
+<p>In my MacBook the file is found in
+<tt class="docutils literal">/Developer/eclipse/plugins/org.python.pydev.debug\_2.2.4.2011110216/pysrc</tt></p>
+<p>(note that upgrades of PyDev may change this path to something else)</p>
+<p>Edit your development buildout config file and add this in your
+plone.recipe.zope2instance part:</p>
+<div class="highlight"><pre><span></span><span class="k">[instance]</span>
+<span class="na">recipe</span> <span class="o">=</span> <span class="s">plone.recipe.zope2instance</span>
+<span class="c1"># ...</span>
+<span class="na">extra-paths</span> <span class="o">=</span><span class="s"></span>
+<span class="s">    /Developer/eclipse/plugins/org.python.pydev.debug_2.2.4.2011110216/pysrc</span>
+</pre></div>
+<p>Of course re-run your buildout. Open the debug perspective in Eclipse
+and start the PyDev debugger server (see link above).</p>
+<p>You can now add anywhere you want (need) the line:</p>
+<div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pydevd</span><span class="p">;</span><span class="n">pydevd</span><span class="o">.</span><span class="n">set_trace</span><span class="p">()</span>
+</pre></div>
+<p>or create and useuse the shortcut &quot;pydevd&quot; to insert your first hard breakpoint.</p>
+<p>Start your Zope instance and make the necessary clicks to execute the line
+that has the hard breakpoint. Wow, great : the next line of Python to be
+executed is hilited from there, you cand step, step over, go to the next
+return, and even add soft breakpoint double clicking in the left margin
+anywhere in your source code.</p>
+<p>All other things you may need to know about debugging with PyDev <a class="reference external" href="http://www.pydev.org/manual_adv_debugger.html">are here</a> and usable &quot;as is&quot; in a
+Zope server.</p>
+<p>Another great feature for those who develop with Windows: when debugging with
+Eclipse/Pydev you can start your development instance as a service, when
+before you needed to run the sloooooow &quot;instance fg&quot; and benefit of Eclipse
+remote debugging.</p>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'step-debugging-zope-eclipse-pydev.html';
+        var disqus_url = 'http://glenfant.github.io/step-debugging-zope-eclipse-pydev.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

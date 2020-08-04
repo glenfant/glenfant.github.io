@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Digital Snake and Family - Buildout</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="http://glenfant.github.io/build-a-wsgi-script-for-mod_wsgi-from-zc-buildout.html">Build a WSGI script for mod_wsgi from zc.buildout</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2013-06-29T14:46:00+02:00">
+                Published: Sam 29 juin 2013
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/buildout.html">Buildout</a> <a href="http://glenfant.github.io/tag/python.html">Python</a> </p>
+</footer><!-- /.post-info --><div class="section" id="forewords">
+<h2>Forewords</h2>
+<p>While building a <a class="reference external" href="http://flask.pocoo.org/">Flask</a> application with
+<a class="reference external" href="https://pypi.python.org/pypi/zc.buildout/">zc.buildout</a>, I have been
+searching a way to build the script for Apache's <a class="reference external" href="https://code.google.com/p/modwsgi/">mod_wsgi</a> directly from the buildout command.</p>
+<p>Being brain dumb, having other emergencies, and being a lazy programmer, I
+asked to <a class="reference external" href="http://stackoverflow.com/questions/12836832/building-the-wsgi-script-for-flask-with-zc-buildout">stackoverflow for some hints</a>.</p>
+<p>My fellow <a class="reference external" href="http://www.gawel.org/">Gaël Pasgrimaud</a> suggests using
+<a class="reference external" href="https://pypi.python.org/pypi/collective.recipe.modwsgi/">collective.recipe.modwsgi</a>
+but I did not want to add the <a class="reference external" href="http://pythonpaste.org/deploy/">PasteDeploy monster</a>
+to my software stack.</p>
+<p>So I took time to hack <a class="reference external" href="https://pypi.python.org/pypi/zc.recipe.egg/2.0.0">zc.recipe.egg</a> and find how it creates
+custom scripts. Et voilà...</p>
+<p>I found a way to create my custom <strong>wsgi script</strong> just using the great
+<a class="reference external" href="https://pypi.python.org/pypi/z3c.recipe.runscript">z3c.recipe.runscript</a>,
+I already use for other purposes in various projects.
+<tt class="docutils literal">z3c.recipe.runscript</tt> is a great piece of software that helps
+creating your own custom small recipes when you don't find what you need
+in Pypi or have time to create a real zc.buildout recipe. Here are the
+snips you need to do the same in your project :</p>
+</div>
+<div class="section" id="a-snip-of-buildout-cfg">
+<h2>A snip of buildout.cfg</h2>
+<div class="gist">
+    <script src='https://gist.github.com/5890957.js'></script>
+    <noscript>
+        <pre><code>[wsgiscript]
+ 
+# Build the wsgi script for mod_wsgi
+recipe = z3c.recipe.runscript
+install-script = ${buildout:directory}/buildouthelpers.py:make_wsgi_script
+update-script = ${:install-script}
+ 
+# Parameters
+egg = egg.with.wsgiapp
+script = ${buildout:parts-directory}/wsgiscript/myapp.wsgi
+app = egg.with.wsgiapp.appobject
+</code></pre>
+    </noscript>
+</div>
+<!-- [gist https://gist.github.com/glenfant/5890957 /] -->
+<p>The three parameters expected from this custom part are :</p>
+<p><strong>egg</strong></p>
+<p>The egg name that contains the wsgi app code.</p>
+<p><strong>script</strong></p>
+<p>The full path to the wsgi script that will &nbsp;be generated, the same path
+should sit to the right of
+the <a class="reference external" href="https://code.google.com/p/modwsgi/wiki/ConfigurationDirectives#WSGIScriptAlias">WSGIScriptAlias</a>&nbsp;in
+your Apache config.</p>
+<p><strong>app</strong></p>
+<p>The Python name of the application object in the above mentioned egg.</p>
+<p>And the snip of above referenced <strong>buildouthelpers.py</strong>:</p>
+<div class="gist">
+    <script src='https://gist.github.com/5890964.js'></script>
+    <noscript>
+        <pre><code>WSGISCRIPT_TEMPLATE = """\
+# -*- coding: utf-8 -*-
+import sys
+import os
+
+sys.path[0:0] = [
+{0}
+]
+
+_application = None
+
+def application(environ, start_response):
+    global _application
+    # Potential app environment setup
+    if _application is None:
+        from {1} import {2} as _application
+    return _application(environ, start_response)
+"""
+
+def make_wsgi_script(recipe, buildout):
+    """Build the script for Apache/mod_wsgi
+    """
+    # Late import: zc.recipe.egg may not be installed when executing 1st
+    # function
+    from zc.recipe.egg.egg import Eggs
+    app_egg = recipe['egg']
+    wsgi_filepath = recipe['script']
+    app_mod, app_obj = recipe['app'].rsplit('.', 1)  # 'a.b.c.d' -> 'a.b.c', 'd'
+
+    reqs, ws = Eggs(buildout, app_egg, recipe).working_set()
+    egg_paths = [pkg.location for pkg in ws]
+    src_egg_paths = ',\n'.join(["    '{0}'".format(path) for path in egg_paths])
+    with open(wsgi_filepath, 'w') as fh:
+        fh.write(WSGISCRIPT_TEMPLATE.format(src_egg_paths, app_mod, app_obj))
+    return
+</code></pre>
+    </noscript>
+</div>
+<p>Some assumptions without which none of this works:</p>
+<ul class="simple">
+<li>Your wsgi app sits in the <strong>egg.with.wsgiapp</strong> egg.</li>
+<li>This&nbsp;<strong>egg.with.wsgiapp</strong> egg is installed in another buildout part
+using <strong>zc.recipe.egg</strong> recipe (or another one that relies on it),
+and this part is executed <strong>before [wsgiscript]</strong>.</li>
+<li>All requirements for <strong>egg.with.wsgiapp</strong> must sit in its <strong>setup()</strong>
+parameter <strong>install_requires</strong> and not in a pip requirements file.</li>
+</ul>
+<p>Hope this will help others who fell in a similar situation. Any question
+or improvement suggestion is welcome.</p>
+</div>
+<p>There are <a href="http://glenfant.github.io/build-a-wsgi-script-for-mod_wsgi-from-zc-buildout.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="http://glenfant.github.io/bootstrap-and-install-a-buildout-based-project-without-internet-connection.html" rel="bookmark"
+                           title="Permalink to Bootstrap and install a buildout based project without Internet connection">Bootstrap and install a buildout based project without Internet connection</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2011-07-31T20:30:00+02:00">
+                Published: Dim 31 juillet 2011
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/buildout.html">Buildout</a> </p>
+</footer><!-- /.post-info -->                <p class="first last">How can you deploy a zc.buildout project without an Internet connection on the target host.</p>
+
+                <a class="readmore" href="http://glenfant.github.io/bootstrap-and-install-a-buildout-based-project-without-internet-connection.html">read more</a>
+<p>There are <a href="http://glenfant.github.io/bootstrap-and-install-a-buildout-based-project-without-internet-connection.html#disqus_thread">comments</a>.</p>                </div><!-- /.entry-content -->
+            </article></li>
+                </ol><!-- /#posts-list -->
+                </section><!-- /#content -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

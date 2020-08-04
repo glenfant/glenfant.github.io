@@ -3,17 +3,13 @@
 <head>
         <meta charset="utf-8" />
         <title>Digital Snake and Family - glenfant</title>
-        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/main.css" />
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
         <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
-
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
-                <h1><a href="http://glenfant.github.io/">Digital Snake and Family  <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
                 <nav><ul>
                     <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
                     <li><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
@@ -22,50 +18,7 @@
 
             <aside id="featured" class="body">
                 <article>
-                    <h1 class="entry-title"><a href="http://glenfant.github.io/back-on-iwmemberreplace.html">Back on iw.memberreplace</a></h1>
-<footer class="post-info">
-        <abbr class="published" title="2009-03-08T14:36:00+01:00">
-                Published: Dim 08 mars 2009
-        </abbr>
-
-        <address class="vcard author">
-                By                         <a class="url fn" href="http://glenfant.github.io/author/glenfant.html">glenfant</a>
-        </address>
-<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
-<p>tags: <a href="http://glenfant.github.io/tag/plone.html">Plone</a> <a href="http://glenfant.github.io/tag/zope-2.html">Zope 2</a> <a href="http://glenfant.github.io/tag/zope-3.html">Zope 3</a> </p>
-</footer><!-- /.post-info --><p>I blogged some months ago about
-<a class="reference external" href="http://plone.org/products/iw-memberreplace/">iw.memberrreplace</a>. In
-some words, iw.memberreplace provides a tool that clones the security
-features of an unser to another one (ownership, DC creator, sharings,
-group membership). No more hassle digging around huge Plone site and
-hundreds of clicks to do this.</p>
-<p>Last week, I read a conversation with <a class="reference external" href="http://n2.nabble.com/Re%3A-what%27s-up-with-plone.app.changeownership-%21-%21-tp2416270p2416270.html">John Stahl and Mustapha
-Benali</a>
-about the <a class="reference external" href="http://plone.org/products/plone/roadmap/185/">PLIP 185</a>,
-and realized that this PLIP is almost iw.memberreplace (or the
-opposite).</p>
-<p>So I spend a couple of hours on that component to add the last details
-on that component. Et voilà, the last release of iw.memberreplace
-(1.0.0-RC1) fulfills now that PLIP: the original member can now be
-removed - if defined in a mutable users source.</p>
-<p>I swear that in the future, I will read the open PLIPs before creating a
-new component ;o)</p>
-<p>Enjoy...</p>
-<p><img alt="iw.memberreplace control panel" src="http://glenfant.files.wordpress.com/2009/03/cliche-2009-03-08-13-53-17.png" /></p>
-                </article>
-            </aside><!-- /#featured -->
-                <section id="content" class="body">
-                    <h1>Other articles</h1>
-                    <hr />
-                    <ol id="posts-list" class="hfeed">
-
-            <li><article class="hentry">
-                <header>
-                    <h1><a href="http://glenfant.github.io/archetypes-sucks.html" rel="bookmark"
-                           title="Permalink to Archetypes sucks...">Archetypes sucks...</a></h1>
-                </header>
-
-                <div class="entry-content">
+                    <h1 class="entry-title"><a href="http://glenfant.github.io/archetypes-sucks.html">Archetypes sucks...</a></h1>
 <footer class="post-info">
         <abbr class="published" title="2008-05-09T15:04:00+02:00">
                 Published: Ven 09 mai 2008
@@ -76,19 +29,54 @@ new component ;o)</p>
         </address>
 <p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
 <p>tags: <a href="http://glenfant.github.io/tag/plone.html">Plone</a> </p>
-</footer><!-- /.post-info -->                <p class="first last">Hearing bad feedbacks from Archetypes. WTF?</p>
-
-                <a class="readmore" href="http://glenfant.github.io/archetypes-sucks.html">read more</a>
-                </div><!-- /.entry-content -->
-            </article></li>
-                </ol><!-- /#posts-list -->
-                </section><!-- /#content -->
+</footer><!-- /.post-info --><p>Eh, not my personal opinion but...</p>
+<p>That's what we can read in some posts and blogs. So, why does AT sucks
+according to these opinions?</p>
+<ul class="simple">
+<li>It's old style python (read mostly plain 2.1 python) and doesn't use
+the latest features that came up to Python 2.4 (decorators, misc new
+style classes features...).</li>
+<li>There's no out of the box support for repetead fields or groups of
+fields (read &quot;we can't add n files or images&quot;)</li>
+<li>AT is uselessly noisy, and it's code is now as messy as obese.</li>
+<li>AT is slow, more specifically for authors, and is a major cause of
+Plone lazyness.</li>
+<li>AT APIs are sometimes complicated. We use
+&quot;content.getField('foo').set(content, value)&quot; when Python 2.4 could
+let us just type &quot;content.fields.foo = value&quot; or better &quot;content.foo
+= value&quot;.</li>
+<li>AT is not Zope3 &quot;ish&quot;, or does the minimal stuff to run within Plone
+3. And yes, it uses always the old style Zope 2 interfaces, CMF skins
+layer, nested complex ZPT macros where viewlets could do better job.</li>
+<li>The set of metadata that ship with AT is not really extensible or
+replaceable though it's named ExtensibleMetadata.</li>
+</ul>
+<p>So... Let's <strong>KILL</strong> Archetypes! Yes, and what else?</p>
+<p>Okay there's new kids on the block. There's lot of buzz around good
+newcomers in the field of AT, like the new plone base contents (see the
+<a class="reference external" href="http://pypi.python.org/pypi/plone.app.content">plone.app.content</a>
+egg) you can use if you don't need advanced features.</p>
+<p>Or you could wait for the promising new framework
+<a class="reference external" href="http://devilstickproject.net/">Devilstick</a> that will let us define
+the data model with XML.</p>
+<p>Just don't forget that if Plone ships with a nice collection of content
+types, has so many third party content types and rich services, if Plone
+is often referred as the best open-source CMS, if you can sell Plone
+based competitive solutions to your customers you just need to say
+&quot;<strong>Thank you so much Archetypes developers</strong>&quot;.</p>
+<p>In addition, most (all?) of above listed issues of today's Archetypes
+can be fixed in the future without breaking support for actual content
+types.</p>
+<p>Due to so many skilled developers and rich solutions Archetypes is here
+to stay for years and years. Yeah!</p>
+<p>There are <a href="http://glenfant.github.io/archetypes-sucks.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
         <section id="extras" class="body">
                 <div class="blogroll">
-                        <h2>blogroll</h2>
+                        <h2>links</h2>
                         <ul>
                             <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
-                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (fr)</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
                         </ul>
                 </div><!-- /.blogroll -->
                 <div class="social">
@@ -99,6 +87,7 @@ new component ;o)</p>
                             <li><a href="https://twitter.com/glenfant">twitter</a></li>
                             <li><a href="https://github.com/glenfant">github</a></li>
                             <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
                             <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
                         </ul>
                 </div><!-- /.social -->
@@ -112,5 +101,14 @@ new component ;o)</p>
                 <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
         </footer><!-- /#contentinfo -->
 
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

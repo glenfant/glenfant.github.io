@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Digital Snake and Family - FastAPI</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="http://glenfant.github.io/flask-g-object-for-fastapi.html">A Flask &quot;g&quot; object for FastAPI</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2020-08-02T00:00:00+02:00">
+                Published: Dim 02 août 2020
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/python.html">Python</a> <a href="http://glenfant.github.io/tag/tip.html">Tip</a> <a href="http://glenfant.github.io/tag/flask.html">Flask</a> <a href="http://glenfant.github.io/tag/fastapi.html">FastAPI</a> </p>
+</footer><!-- /.post-info --><div class="section" id="tl-dr">
+<h2>tl; dr</h2>
+<p>Those who are familiar with Flask are familiar with the <tt class="docutils literal">g</tt> object that's convenient to have a
+&quot;request lifecycle pseudo global&quot; where programmers can store / retrieve arbitrary attributes.</p>
+<p><a class="reference external" href="https://flask.palletsprojects.com/en/1.1.x/appcontext/#storing-data">Here is the doc</a> for that
+<tt class="docutils literal">g</tt> object. Tons of examples of various usages are available at <a class="reference external" href="https://stackoverflow.com/search?q=%5Bflask%5D+g">stackoverflow</a> or blog posts (storing a JWT token, the
+required API version, ...).</p>
+<p>From now, I use FastAPI in place of flask for pure restful API servers. And unfortunately, FastAPI
+has not a similar feature. The FastAPI documentation says to use the <a class="reference external" href="https://fastapi.tiangolo.com/tutorial/sql-databases/#about-requeststate">request.state</a> object. But this
+requires to pass the <tt class="docutils literal">request</tt> object along in the depth to all callables from the route top
+function to every function that needs it.</p>
+<p>Good news, this recipe that leverages both the <a class="reference external" href="https://docs.python.org/3/library/types.html#types.SimpleNamespace">types.SimpleNamespace</a> and the new stdlib module
+from Python 3.7+ <a class="reference external" href="https://docs.python.org/3/library/contextvars.html">contextvars</a> provides a
+<tt class="docutils literal">flask.g</tt> like feature.</p>
+</div>
+<div class="section" id="the-big-picture">
+<h2>The big picture</h2>
+<p>In short, the <tt class="docutils literal">contextvars</tt> module provides to programmers a convenient way to have &quot;pseudo
+globals&quot; that are shared by coroutines participating to the same asynchronous execution cycle. You
+can read better explanations than mmine in the official doc (see the link above) and tons of good
+examples <a class="reference external" href="https://www.google.com/search?client=firefox-b-d&amp;q=contextvars+tutorial">from here</a>.</p>
+<p>The <tt class="docutils literal">types.SimpleNamespace</tt> is an arbitrary personal choice for an easy to use attributes
+container. Once you'll get the enlightenment of this recipe, you may use a custom object that's
+better suited to what you need.</p>
+<p>In short, this recipe shows how to:</p>
+<ul class="simple">
+<li>Create the request lifecycle shared object.</li>
+<li>(Re)initialize the request lifecycle shared object at each request in a middleware.</li>
+<li>Make a basic usage of that request lifecycle shared object.</li>
+</ul>
+<p>If you want to rebuild the demo at home, just create and activate a new Python 3.7+ virtualenv with whatever tool you prefer (virtualenv, venv, pew, - name yours) and issue:</p>
+<pre class="code console literal-block">
+<span class="go">pip install fastapi uvicorn requests</span>
+</pre>
+<p>Note that <tt class="docutils literal">requests</tt> is here just to make the demo client easier. You would not need it otherwise.</p>
+<p>Now the files...</p>
+<div class="section" id="requestvars-py">
+<h3><tt class="docutils literal">requestvars.py</tt></h3>
+<p>The <tt class="docutils literal">requestvars</tt> module provides the <tt class="docutils literal">contextvars</tt> bootstrap and the public API for your route
+handlers (and app business logic).</p>
+<div class="gist">
+    <script src='https://gist.github.com/2fe530e5a2b90c28608165b5a18afcaf.js?file=requestvars.py'></script>
+    <noscript>
+        <pre><code>import contextvars
+import types
+import typing
+
+request_global = contextvars.ContextVar("request_global",
+                                        default=types.SimpleNamespace())
+
+
+def g():
+    return request_global.get()
+</code></pre>
+    </noscript>
+</div>
+<div class="admonition admonition-disclaimer">
+<p class="first admonition-title">Disclaimer</p>
+<p class="last">I know! &quot;My&quot; <tt class="docutils literal">g</tt> is a <strong>function</strong> when the Flask <tt class="docutils literal">g</tt> is just a strange <strong>object</strong> that does
+not need to be called. Any help to fill the gap without a monster machinery is welcome.</p>
+</div>
+</div>
+<div class="section" id="asgi-py">
+<h3><tt class="docutils literal">asgi.py</tt></h3>
+<p>Just provides a function that creates our FastAPI <tt class="docutils literal">app</tt> object. Nothing special. Just notice the <tt class="docutils literal">init_requestvars</tt> dedicated middleware.</p>
+<p>It re-initiallizes the content of our contextvar to an empty <tt class="docutils literal">types.SimpleNamespace</tt> object. Of
+course, you may customize this with a pre-populated namespace with data required by your business
+logic, or choose something lese than a <tt class="docutils literal">types.SimpleNamespace</tt> as free attributes container.</p>
+<div class="gist">
+    <script src='https://gist.github.com/2fe530e5a2b90c28608165b5a18afcaf.js?file=asgi.py'></script>
+    <noscript>
+        <pre><code>import requestvars
+import types
+import fastapi
+import routes
+
+
+def create_app() -> fastapi.FastAPI:
+    app = fastapi.FastAPI()
+
+    @app.middleware("http")
+    async def init_requestvars(request: fastapi.Request, call_next):
+        # Customize that SimpleNamespace with hatever you need
+        initial_g = types.SimpleNamespace()
+        requestvars.request_global.set(initial_g)
+        response = await call_next(request)
+        return response
+
+    app.include_router(routes.router)
+    return app
+</code></pre>
+    </noscript>
+</div>
+</div>
+<div class="section" id="routes-py">
+<h3><tt class="docutils literal">routes.py</tt></h3>
+<p>Just a simple <tt class="docutils literal">GET</tt> handler at <tt class="docutils literal">/foo</tt> that requires a <tt class="docutils literal">q</tt> parameter and returns that
+parameters twice. Stupid and useless, its only usage is the use of the <tt class="docutils literal">requestvars.g</tt> function
+that provides the  request lifecycle pseudo-global.</p>
+<dl class="docutils">
+<dt>Line 3:</dt>
+<dd>the usual import as for a global function.</dd>
+<dt>Line 10:</dt>
+<dd>we add the arbitrary attribute <tt class="docutils literal">blah</tt> to the request lifecycle pseudo-global which value is
+the <tt class="docutils literal">q</tt> parameter of the request.</dd>
+<dt>Line 11:</dt>
+<dd>we call the <tt class="docutils literal">double function</tt> <strong>with no parameter</strong></dd>
+<dt>Line 17:</dt>
+<dd>the <tt class="docutils literal">double</tt> async function grabs the <tt class="docutils literal">blah</tt> attribute of our request lifecycle
+pseudo-global and returns it twice.</dd>
+</dl>
+<p>The other lines do not need comments event to FastAPI noobs.</p>
+<div class="gist">
+    <script src='https://gist.github.com/2fe530e5a2b90c28608165b5a18afcaf.js?file=routes.py'></script>
+    <noscript>
+        <pre><code>import asyncio
+import fastapi
+from requestvars import g
+
+router = fastapi.APIRouter()
+
+
+@router.get("/foo")
+async def foo_route(q: str = ""):
+    g().blah = q
+    result = await double()
+    return {"result": result}
+
+
+async def double():
+    await asyncio.sleep(1.0)
+    return g().blah * 2
+</code></pre>
+    </noscript>
+</div>
+</div>
+<div class="section" id="server-py">
+<h3><tt class="docutils literal">server.py</tt></h3>
+<p>Is just an ordinary minimal <tt class="docutils literal">uvicorn</tt> server which serves our stupid API on
+<tt class="docutils literal"><span class="pre">http://localhost:8000/foo?q=whatever</span></tt>. Does not need comment.</p>
+<div class="gist">
+    <script src='https://gist.github.com/2fe530e5a2b90c28608165b5a18afcaf.js?file=server.py'></script>
+    <noscript>
+        <pre><code>import uvicorn
+from asgi import create_app
+
+
+def main():
+    app = create_app()
+    uvicorn.run(app)
+
+
+if __name__ == "__main__":
+    main()
+</code></pre>
+    </noscript>
+</div>
+</div>
+<div class="section" id="client-py">
+<h3><tt class="docutils literal">client.py</tt></h3>
+<p>Is just a demo client that consumes our stupid API in an infinite loop, providing as <tt class="docutils literal">q</tt> parameter whatever string provided as first shell line argument. Example:</p>
+<pre class="code console literal-block">
+<span class="go">python client.py whatever</span>
+</pre>
+<div class="gist">
+    <script src='https://gist.github.com/2fe530e5a2b90c28608165b5a18afcaf.js?file=client.py'></script>
+    <noscript>
+        <pre><code>import sys
+import requests
+
+endpoint = "http://localhost:8000/foo"
+
+query = sys.argv[1]
+
+while True:
+    params = {"q": query}
+    response = requests.get(endpoint, params=params)
+    print(response.json())
+</code></pre>
+    </noscript>
+</div>
+</div>
+</div>
+<div class="section" id="let-s-run-the-demo">
+<h2>Let's run the demo</h2>
+<p>Okay now open 3 or more terminals. In each terminal, <tt class="docutils literal">cd</tt> to the demo directory where you grabbed the above files, and activate the virtual env.</p>
+<p>In the first terminal, run the server:</p>
+<pre class="code console literal-block">
+<span class="go">python server.py</span>
+</pre>
+<p>In the second terminal, run a client with parameter &quot;hop&quot;:</p>
+<pre class="code console literal-block">
+<span class="go">python client.py hop</span>
+</pre>
+<p>You should see...</p>
+<pre class="code console literal-block">
+<span class="go">{'result': 'hophop'}
+{'result': 'hophop'}
+... And so on each second ...</span>
+</pre>
+<p>In the second terminal, run a client with parameter &quot;schtroumpf&quot;:</p>
+<pre class="code console literal-block">
+<span class="go">python client.py schtroumpf</span>
+</pre>
+<p>You should see...</p>
+<pre class="code console literal-block">
+<span class="go">{'result': 'schtroumpfschtroumpf'}
+{'result': 'schtroumpfschtroumpf'}
+... And so on each second ...</span>
+</pre>
+<p>You may add as many terminals you want and ontinue on with other custom and unique paraméter, and
+notice what you can notice with the first two client terminals:</p>
+<p>Each request lifecycle has its own values that are propagated through the <tt class="docutils literal">g()</tt> attributes, that
+don't mess with <tt class="docutils literal">g()</tt> attributes from other requests lifecycles.</p>
+<p>Any suggestion to improve this recipe is welcome in comments below.</p>
+</div>
+<p>There are <a href="http://glenfant.github.io/flask-g-object-for-fastapi.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

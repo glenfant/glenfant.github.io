@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Configuration for Python applications</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/drafts/configuration-for-python-application.html" rel="bookmark"
+           title="Permalink to Configuration for Python applications">Configuration for Python applications</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-03-26T10:57:00+01:00">
+                Published: Sam 26 mars 2016
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/python.html">Python</a> </p>
+</footer><!-- /.post-info -->      <div class="section" id="abstract">
+<h2>Abstract</h2>
+<p>Medium or big sized applications need flexibility in order to allow facing various user requirements. Of course, you could - and you certainly should - use <a class="reference external" href="https://docs.python.org/3/library/argparse.html">argparse</a>  from stdlib or <a class="reference external" href="http://click.pocoo.org/5/">click</a> add-on to let the user provide his / her preferences and targets.</p>
+<p>But this is somehow annoying when the user needs to always repeat the same options set when he works all day long within the same project context, and uses the same looooong command lines.</p>
+<p>That's why most flexible applications let the user choose his preferred options in a configuration file. And plenty of solutions are available to Python application developers.</p>
+<p>I'll discuss here about some of the most popular solutions, and expose their respective benefits and drawbacks.</p>
+</div>
+<div class="section" id="intended-audience">
+<h2>Intended audience</h2>
+<p>This blog article is for an audience of beginners with a couple of weeks of Python practice.</p>
+</div>
+<div class="section" id="the-stdlib-solutions">
+<h2>The stdlib solutions</h2>
+<p>The main advantage of using a solution exclusively based on resources from stdlib are:</p>
+<ul class="simple">
+<li>Of course you minimize your project requirements</li>
+<li>You're sitting on giant shoulder, using popular configuration formats and - almost - bug free solution.</li>
+</ul>
+<div class="section" id="configparser">
+<h3>configparser</h3>
+<p>I won't go in deep in <a class="reference external" href="https://docs.python.org/3/library/configparser.html">configparser</a> since it is explained in details in the standard documentation.</p>
+<div class="admonition hint">
+<p class="first admonition-title">Hint</p>
+<p class="last">I'm talking here about the <tt class="docutils literal">configparser</tt> that ships with Python 3.x, the one that ships with Python 2.6 or Python 2.7 is slightly different. If you want the Python 3.x features of <tt class="docutils literal">configparser</tt> in your Python 2.x application, you may add the <a class="reference external" href="https://pypi.python.org/pypi/configparser2/">configparser2</a>, a backport of Python 3.x <tt class="docutils literal">configparser</tt> to Python 2.x, in your application requirements.</p>
+</div>
+<p><a class="reference external" href="https://docs.python.org/3/library/configparser.html">configparser</a> is the most popular - configuration file utility. It uses the well known <tt class="docutils literal">.ini</tt> file format popularized by Windows.</p>
+<div class="highlight"><pre><span></span><span class="k">[foo]</span>
+<span class="c1"># A comment line</span>
+<span class="na">database</span> <span class="o">=</span> <span class="s">mydb</span>
+<span class="na">option2</span> <span class="o">=</span> <span class="s">3000</span>
+<span class="na">pidfile</span> <span class="o">=</span> <span class="s">/var/lock/myapp.pid</span>
+
+<span class="k">[bar]</span>
+<span class="na">option1</span> <span class="o">=</span> <span class="s">test_${foo:option1}</span>
+</pre></div>
+<table border="1" class="colwidths-given docutils">
+<caption>Summary</caption>
+<colgroup>
+<col width="35%" />
+<col width="65%" />
+</colgroup>
+<thead valign="bottom">
+<tr><th class="head">Feature</th>
+<th class="head">Comment</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr><td>Data model</td>
+<td>Nested on 2 levels: sections and options, with limited mapping protocol</td>
+</tr>
+<tr><td>Parsed data types</td>
+<td>Strings only. You need to convert to <tt class="docutils literal">int</tt>, <tt class="docutils literal">float</tt> or <tt class="docutils literal">bool</tt> at parse time. Custom converters are possible by subclassing the parser.</td>
+</tr>
+<tr><td>Interpolation</td>
+<td>Yes: global and per section interpolations are possible</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="xml">
+<h3>XML</h3>
+</div>
+<div class="section" id="windows-registry">
+<h3>Windows registry</h3>
+<p>This is the preferred way for Windows applications. The registry is some kind of persistent hierarchical key/value(s) database with a secured access, in which most Windows applications store their user preferences. Of course you should not opt for this solution if you want to distribute a cross-platform application.</p>
+<p>Windows comes with the <tt class="docutils literal">regedit.exe</tt> application that lets you tune applications as you want. But be careful when using this utility as computer administrator. You may corrupt other applications or kick yourself off the system.</p>
+</div>
+<div class="section" id="mac-osx-plist">
+<h3>Mac OSX Plist</h3>
+<p>As for above mentioned Windows registry, you may choose this solution for pure OSX applications.</p>
+</div>
+</div>
+<div class="section" id="the-add-on-solutions">
+<h2>The add-on solutions</h2>
+<p>Some add-on solutions provide more flexible or powerful</p>
+</div>
+<div class="section" id="what-about-the-others">
+<h2>What about the others</h2>
+<div class="line-block">
+<div class="line">&quot;Hey man! You forgot to talk about xxx and yyy&quot;</div>
+</div>
+<p>Yes perhaps I'm not aware of these solutions, but let me tell you some words about those I didn't mention and do not intentionally, and I do not recommend. For other solutions, you may add some words in the comments of this post.</p>
+<div class="section" id="json">
+<h3>JSON</h3>
+<p>Yes JSON files may be used to configure your application. JSON provides the same data structure as the ones provided by YAML, and is popular in the NodeJS world, but:</p>
+<ul class="simple">
+<li>There's no standard for comments in JSON, you cannot document your configuration file with the Python OTB JSON support.</li>
+<li>JSON has not the rich substitution and aliasing features of YAML.</li>
+</ul>
+<p>So you may use JSON for applications with few configurable data, but prefer YAML or another one if you need flexibility or support for larger configuration files.</p>
+</div>
+</div>
+
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

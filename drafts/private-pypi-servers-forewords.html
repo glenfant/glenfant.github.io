@@ -3,17 +3,13 @@
 <head>
         <meta charset="utf-8" />
         <title>Private Pypi servers - 1 - Forewords</title>
-        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/main.css" />
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
         <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
-
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
-                <h1><a href="http://glenfant.github.io/">Digital Snake and Family  <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
                 <nav><ul>
                     <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
                     <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
@@ -23,7 +19,7 @@
   <article>
     <header>
       <h1 class="entry-title">
-        <a href="http://glenfant.github.io/private-pypi-servers-forewords.html" rel="bookmark"
+        <a href="http://glenfant.github.io/drafts/private-pypi-servers-forewords.html" rel="bookmark"
            title="Permalink to Private Pypi servers - 1 - Forewords">Private Pypi servers - 1 - Forewords</a></h1>
     </header>
 
@@ -164,13 +160,17 @@ partners access to their dedicated packages.</p>
 <h3>Upload with setuptools</h3>
 <p>If your private Pipi server has this feature, you could register and
 upload your private Python packages with the usual setup respective
-commands :</p>
-<p>python setup.py sdist register [options]</p>
-<p>python setup.py sdist upload [options]</p>
+commands:</p>
+<div class="highlight"><pre><span></span><span class="go">python setup.py sdist register [options]</span>
+
+<span class="go">python setup.py sdist upload [options]</span>
+</pre></div>
 <p>If you prefer a more minimalistic Pypi server that has not this feature
 (say a simple Apache static distributed directory) , you should :</p>
-<p>python setup.py sdist</p>
-<p>scp dist/foo-1.2.3.tar.gz <a class="reference external" href="mailto:myself&#64;apache-pypi">myself&#64;apache-pypi</a>:/home/distros/foo/</p>
+<div class="highlight"><pre><span></span><span class="go">python setup.py sdist</span>
+
+<span class="go">scp dist/foo-1.2.3.tar.gz myself@apache-pypi:/home/distros/foo/</span>
+</pre></div>
 </div>
 <div class="section" id="xmlrpc-and-rest-json-support">
 <h3>XMLRPC and REST/JSON support</h3>
@@ -278,10 +278,10 @@ this is not a troll playground :D</p>
 </section>
         <section id="extras" class="body">
                 <div class="blogroll">
-                        <h2>blogroll</h2>
+                        <h2>links</h2>
                         <ul>
                             <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
-                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (fr)</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
                         </ul>
                 </div><!-- /.blogroll -->
                 <div class="social">
@@ -292,6 +292,7 @@ this is not a troll playground :D</p>
                             <li><a href="https://twitter.com/glenfant">twitter</a></li>
                             <li><a href="https://github.com/glenfant">github</a></li>
                             <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
                             <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
                         </ul>
                 </div><!-- /.social -->
@@ -305,5 +306,14 @@ this is not a troll playground :D</p>
                 <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
         </footer><!-- /#contentinfo -->
 
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>

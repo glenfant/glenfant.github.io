@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Test the latest Docker with Vagrant</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/test-latest-docker-with-vagrant.html" rel="bookmark"
+           title="Permalink to Test the latest Docker with Vagrant">Test the latest Docker with Vagrant</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2017-09-15T10:57:00+02:00">
+                Published: Ven 15 septembre 2017
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/vagrant.html">Vagrant</a> <a href="http://glenfant.github.io/tag/docker.html">Docker</a> <a href="http://glenfant.github.io/tag/macos.html">MacOS</a> <a href="http://glenfant.github.io/tag/windows.html">Windows</a> </p>
+</footer><!-- /.post-info -->      <p>Want to experiment the latest Docker CE features on Linux when you have a MacOS or Windows box? Or just want to learn Docker in a sandbox?</p>
+<p>Here is a simple <tt class="docutils literal">Vagrantfile</tt> that will make your day. Just <tt class="docutils literal">vagrant up</tt> (wait some minutes), then <tt class="docutils literal">vagrant ssh</tt> and you're done.</p>
+<p>Ah! There's a goodie: The file sharing is supported by NFS on MacOS and SMB on Windows. Both provide faster file sync than the default VBoxFS.</p>
+<p>Comments, pull requests and any improvement suggestions are welcome.</p>
+<div class="gist">
+    <script src='https://gist.github.com/7772f48aa17eb4e09d4a62390825eade.js'></script>
+    <noscript>
+        <pre><code># -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# Docker playground for MacOS and Windows
+# =======================================
+#
+# - Installs the latest Docker + Docker-compose
+# - Uses faster NFS files sync on Mac OS
+# - Uses faster SMB files share on Windows
+#
+# Installation steps:
+#
+# - Install lates Virtualbox and its guest extensions pack
+#   https://www.virtualbox.org/wiki/Downloads
+# - Install Vagrant
+#   https://www.vagrantup.com/
+# - cd /where/you/want
+# - cp Vagrantfile .
+# - vagrant up
+#   (you will be prompted for your sudo password when vagrant tunes nfs config)
+# - vagrant ssh
+#
+# Quick check the installation in a shell of the guest Ubuntu VM:
+#
+# - docker run hello-world
+# -------------------------------
+
+module OS
+  def OS.macos?
+      (/darwin/ =~ RbConfig::CONFIG['host_os']) != nil
+  end
+  def OS.windows?
+      File::SEPARATOR == '\\'
+  end
+  def OS.unix?
+      !OS.windows?
+  end
+  # Lazy guess, it could be a xBSD
+  def OS.linux?
+      OS.unix? and not OS.macos?
+  end
+end
+
+# Docker stuff provisioning shell scripts
+
+USER = 'vagrant'
+
+# Read https://docs.docker.com/engine/installation/linux/ubuntu/
+# for more options
+DOCKER_INSTALL_LATEST = <<-END_SCRIPT
+sudo apt-get update
+
+echo "Installing base software"
+sudo apt-get -y install \
+    nfs-common \
+    python-software-properties \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    python3-pip \
+    software-properties-common > /dev/null 2>&1
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+    $(lsb_release -cs) stable"
+sudo apt-get update
+
+echo "Installing Docker bundle"
+sudo apt-get -y install docker-ce > /dev/null 2>&1
+sudo usermod -a -G docker #{USER}
+
+echo "Installing Docker-compose"
+sudo pip3 install -U pip
+sudo pip3 install docker-compose
+END_SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-16.04"
+  if OS.unix?
+    config.vm.network "private_network", type: "dhcp"
+    config.vm.synced_folder ".", "/vagrant", type: "nfs"
+  else
+    # OS.windows? -> true
+    config.vm.synced_folder ".", "/vagrant", type: "smb"
+  end
+  config.vm.provider "virtualbox" do |vb|
+    vb.memory = "2048"
+  end
+  config.vm.provision "shell", inline: DOCKER_INSTALL_LATEST
+end
+</code></pre>
+    </noscript>
+</div>
+<p>Exits:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://www.docker.com/">Docker</a></li>
+<li><a class="reference external" href="https://www.vagrantup.com/">Vagrant</a></li>
+<li><a class="reference external" href="https://www.virtualbox.org/">VirtualBox</a></li>
+</ul>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'test-latest-docker-with-vagrant.html';
+        var disqus_url = 'http://glenfant.github.io/test-latest-docker-with-vagrant.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

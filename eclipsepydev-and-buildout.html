@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Eclipse/pydev and buildout</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/eclipsepydev-and-buildout.html" rel="bookmark"
+           title="Permalink to Eclipse/pydev and buildout">Eclipse/pydev and buildout</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2008-05-25T15:51:00+02:00">
+                Published: Dim 25 mai 2008
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/plone.html">Plone</a> </p>
+</footer><!-- /.post-info -->      <p><a class="reference external" href="http://pydev.sourceforge.net/">Pydev</a> has a nice code completion feature
+when editing Python code. You start typing a name, and Eclipse/Pydev offers
+context specific completions with call tips that saves a lot of time when
+programming for a hugh framework like Plone.</p>
+<p>This requires to stuff somehow the PYTHONPATH for your project. This is fairly
+easy with a Plone bundle install tarball, where you just need to provide the
+paths to the Products directory, the <tt class="docutils literal">lib/python</tt> of your instance and the
+global Zope <tt class="docutils literal">$SOFTWARE_HOME</tt>.</p>
+<p>With an instance created with buildout, things are not as
+straightforward. Such an instance is made of tons of eggs that are not
+in the standard &quot;site-packages&quot;, in addition, Zope 2 style products may
+be located in various places. Adding all this manually in the Pydev
+project PYTHONPATH is a real nightmare.</p>
+<p>Hopefully we have two recipe companions who can help us a lot
+configuring Eclipse + Pydev on your buildout instance:</p>
+<ul class="simple">
+<li><a class="reference external" href="http://pypi.python.org/pypi/iw.recipe.cmd">iw.recipe.cmd</a> that
+builds some symlinks tree, with the help of some Python lines, for...</li>
+<li><a class="reference external" href="http://pypi.python.org/pypi/pb.recipes.pydev/">pb.recipe.pydev</a>
+that makes most of the job</li>
+</ul>
+<p>From now we assume you already have a ready Plone 3.x instance.</p>
+<p>With Eclipse, create a new Pydev project, say at the root of your
+buildout. Do not add anything to the Pydev - PYTHONPATH of that project.
+Now quit Eclipse. Your instance root should have a <tt class="docutils literal">.pydevproject</tt> file.</p>
+<p>Open your <tt class="docutils literal">buildout.cfg</tt> and add that stuff:</p>
+<div class="highlight"><pre><span></span><span class="k">[buildout]</span>
+<span class="na">...</span>
+<span class="na">zope-directory</span> <span class="o">=</span> <span class="s">/path/to/your/Zope-2.10.5</span>
+<span class="na">...</span>
+<span class="na">parts</span> <span class="o">=</span><span class="s"></span>
+<span class="s">    ...</span>
+<span class="s">    make_pydev_init_files</span>
+<span class="s">    pydev</span>
+<span class="s">    ...</span>
+<span class="c1"># Do not add parts that add eggs or products after the above parts</span>
+<span class="na">...</span>
+<span class="k">[make_pydev_init_files]</span>
+<span class="c1"># we need this (a Products directory with symlinks to all plone products)</span>
+<span class="c1"># to have completion of code in the Products namespace</span>
+<span class="na">recipe</span> <span class="o">=</span> <span class="s">iw.recipe.cmd:py</span>
+<span class="na">on_install</span> <span class="o">=</span> <span class="s">true</span>
+<span class="na">cmds</span> <span class="o">=</span><span class="s"></span>
+<span class="s">      &gt;&gt;&gt; import os</span>
+<span class="s">      &gt;&gt;&gt; dirs = &quot;&quot;&quot;${instance:products}&quot;&quot;&quot;.split(&quot;\n&quot;)</span>
+<span class="s">      &gt;&gt;&gt; prodlinks = os.path.join(&quot;&quot;&quot;${buildout:directory}&quot;&quot;&quot;.strip() , &#39;pydevlinks&#39;)</span>
+<span class="s">      &gt;&gt;&gt; Products = os.path.join(prodlinks,&#39;Products&#39;)</span>
+<span class="s">      &gt;&gt;&gt; if not os.path.isdir(prodlinks): os.mkdir(prodlinks)</span>
+<span class="s">      &gt;&gt;&gt; if not os.path.isdir(Products): os.mkdir(Products)</span>
+<span class="s">      &gt;&gt;&gt; file(os.path.join(Products , &#39;__init__.py&#39;),&#39;w&#39;).write(&#39;#&#39;)</span>
+<span class="s">      &gt;&gt;&gt; for dir in dirs:</span>
+<span class="s">      &gt;&gt;&gt;     if not dir: continue</span>
+<span class="s">      &gt;&gt;&gt;     for product in [os.path.join(dir,a) for a in os.listdir(dir) if os.path.isdir(os.path.join(dir,))]:</span>
+<span class="s">      &gt;&gt;&gt;         linkname = os.path.join(Products, os.path.basename(product))</span>
+<span class="s">      &gt;&gt;&gt;         if not os.path.islink(linkname): os.symlink(product,linkname)</span>
+
+<span class="k">[pydev]</span>
+<span class="na">recipe</span> <span class="o">=</span> <span class="s">pb.recipes.pydev</span>
+<span class="na">eggs</span> <span class="o">=</span> <span class="s">${instance:eggs}</span>
+
+<span class="c1"># See [make_pydev_init_files] below</span>
+<span class="na">extra_paths</span> <span class="o">=</span><span class="s"></span>
+<span class="s">    ${buildout:directory}/pydevlinks</span>
+<span class="s">    ${buildout:zope-directory}/lib/python</span>
+<span class="na">pydevproject_path</span> <span class="o">=</span> <span class="s">${buildout:directory}/.pydevproject</span>
+</pre></div>
+<p>Re-run your buildout. That's OK? Now open Eclipse and view your project
+properties. Et voilà...</p>
+<div class="figure">
+<img alt="Eclipse dashboard" src="http://glenfant.github.io/images/pydev-pythonpath.png" />
+<p class="caption">PYTHONPATH of Eclipse / Pydev environment</p>
+</div>
+<p>As you can see we use &quot;os.symlink&quot; to fake a products hierarchy. Windows
+(NTFS) users should install a symlink tool like
+&quot;<a class="reference external" href="http://www.microsoft.com/technet/sysinternals/fileanddisk/junction.mspx">junction</a>&quot;
+and tweak the script of the <tt class="docutils literal">make_pydev_init_files</tt> part.</p>
+<div class="admonition admonition-caveat">
+<p class="first admonition-title">Caveat</p>
+<p class="last">do not change manually anything that's in the <tt class="docutils literal">/prodlinks</tt> directory of
+your buildout unless...</p>
+</div>
+<p>Many thanks to <a class="reference external" href="http://www.nabble.com/-Fwd%3A-Re%3A--Product-Developers--buildout-and-eclipse--td16697376s20094.html#a16699863">Tim Knapp and
+Sylvio</a>
+for the hints in the products developers mailing list. Now this is in a
+blog.</p>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'eclipsepydev-and-buildout.html';
+        var disqus_url = 'http://glenfant.github.io/eclipsepydev-and-buildout.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

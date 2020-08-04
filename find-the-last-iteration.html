@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Find the last iteration</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/find-the-last-iteration.html" rel="bookmark"
+           title="Permalink to Find the last iteration">Find the last iteration</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2017-09-16T13:01:00+02:00">
+                Published: Sam 16 septembre 2017
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/python.html">Python</a> <a href="http://glenfant.github.io/tag/tip.html">Tip</a> </p>
+</footer><!-- /.post-info -->      <p>It's sometimes useful to determine where's the last iteration on an iterable object.</p>
+<p>Doing this on a sized object is pretty easy. You just need to get the <tt class="docutils literal">len()</tt> of the container object you're looking over, learn <tt class="docutils literal">enumerate</tt> and just:</p>
+<pre class="code python literal-block">
+<span class="n">obj</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">obj_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="n">do_stuff_with</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+
+    <span class="c1"># Special for last item</span>
+    <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">obj_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">do_play_with</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+</pre>
+<p>That's OK in situations where you can count the iterations before entering in a loop, but what if the <tt class="docutils literal">obj</tt> your code is looping over is not <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sized">Sized</a>?</p>
+<p>This generator comes to the rescue and will notify the last iteration over any iterable object.</p>
+<pre class="code python literal-block">
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="k">def</span> <span class="nf">notify_last_item</span><span class="p">(</span><span class="n">iterable</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Iterates over an iterable of items and yields a 2 tuple contaning
+    (is_last, item).  `is_last` being True when last item is yielded
+
+    :param iterable: iterable or iterator
+    :yield: (is_last, item) tuple
+
+    &gt;&gt;&gt; seq = range(4)
+    &gt;&gt;&gt; list(notify_last_item(seq))
+    [(False, 0), (False, 1), (False, 2), (True, 3)]
+    &quot;&quot;&quot;</span>
+    <span class="c1"># Belt + braces</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">iterable</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterator</span><span class="p">):</span>
+        <span class="n">iterable</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>
+
+    <span class="c1"># Pull 1st value</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="n">iterable</span><span class="p">)</span>  <span class="c1"># Pull 1st value</span>
+
+    <span class="c1"># Run iterator to exhaustion</span>
+    <span class="k">for</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">iterable</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="kc">False</span><span class="p">,</span> <span class="n">last</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="c1"># Report the last value</span>
+    <span class="k">yield</span> <span class="kc">True</span><span class="p">,</span> <span class="n">last</span>
+</pre>
+<p>Now for a simple demo:</p>
+<pre class="code python literal-block">
+<span class="n">obj</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">))</span>  <span class="c1"># Not sizeable</span>
+<span class="k">for</span> <span class="n">is_last_item</span><span class="p">,</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">notify_last_item</span><span class="p">(</span><span class="n">obj</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">is_last_item</span><span class="p">,</span> <span class="n">item</span><span class="p">)</span>
+
+<span class="c1"># Outputs:</span>
+<span class="c1"># False 0</span>
+<span class="c1"># False 1</span>
+<span class="c1"># False 2</span>
+<span class="c1"># False 3</span>
+<span class="c1"># True 4</span>
+</pre>
+<p>Any comment for improvements or others are welcome...</p>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'find-the-last-iteration.html';
+        var disqus_url = 'http://glenfant.github.io/find-the-last-iteration.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

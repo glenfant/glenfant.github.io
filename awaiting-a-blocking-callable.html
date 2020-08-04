@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Awaiting a blocking callable</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/awaiting-a-blocking-callable.html" rel="bookmark"
+           title="Permalink to Awaiting a blocking callable">Awaiting a blocking callable</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2020-08-04T13:01:00+02:00">
+                Published: Mar 04 août 2020
+        </abbr>
+		<br />
+        <abbr class="modified" title="2020-08-04T13:01:00+02:00">
+                Updated: Mar 04 août 2020
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/python.html">Python</a> <a href="http://glenfant.github.io/tag/tip.html">Tip</a> <a href="http://glenfant.github.io/tag/asyncio.html">Asyncio</a> </p>
+</footer><!-- /.post-info -->      <div class="section" id="tl-dr">
+<h2>tl; dr</h2>
+<p>Working with frameworks that leverage the <tt class="docutils literal">asyncio</tt> paradigm is now familiar to lots of Python
+programmers with popular asynchronous frameworks like FastAPI, Faust, Trio (name yours...).</p>
+<p>We need sometimes to use good libs that do not (yet ?) leverage the - not so - new <tt class="docutils literal">asyncio</tt> way,
+and provide only blocking APIs. Think about SQLAlchemy, or others.</p>
+<p>Using such services from a coroutine under event loop control will lock the event loop while
+executing thus yield a performance issue.</p>
+<p>Hopefully the stdlib provides the <a class="reference external" href="https://docs.python.org/3/library/concurrent.futures.html">concurrent.futures</a> package that let us work around this
+annoyance and make a coroutine from a blocking function or method.</p>
+</div>
+<div class="section" id="the-code">
+<h2>The code</h2>
+<div class="gist">
+    <script src='https://gist.github.com/24dc52bb3fe2c39d20c14369a86c43bf.js?file=call_blocking.py'></script>
+    <noscript>
+        <pre><code># Running a blocking callable inside a coroutine
+# ==============================================
+
+import asyncio
+import concurrent.futures
+import functools
+from typing import Callable, Tuple, Dict, Any
+
+# Use the better suited pool (see doc of ``concurrent.future```)
+
+#pool = concurrent.futures.ThreadPoolExecutor()
+#pool = concurrent.futures.ProcessPoolExecutor()
+pool = None  # Default asyncio pool
+
+async def call_blocking(func: Callable, *args: Tuple[Any], **kwargs: Dict[str, Any]) -> Any:
+    """
+    Enable to "await" a blocking I/O callable from an asyncio coroutine
+
+    Args:
+        func: The regular blocking callable (function, method)
+        args: Positional arguments transmitted to ``func``
+        kwargs: Keyword arguments transmitted to ``func``
+    
+    Returns:
+        Anything that's returned by ``func``
+    """
+    loop = asyncio.get_running_loop()
+    new_func = functools.partial(func, *args, **kwargs)
+    result = await loop.run_in_executor(pool, new_func)
+    return result
+</code></pre>
+    </noscript>
+</div>
+</div>
+<div class="section" id="the-demo">
+<h2>The demo</h2>
+<p>Just paste this code under the above one...</p>
+<div class="gist">
+    <script src='https://gist.github.com/24dc52bb3fe2c39d20c14369a86c43bf.js?file=demo.py'></script>
+    <noscript>
+        <pre><code>if __name__ == "__main__":
+    import time
+    from call_blocking import call_blocking
+
+    def multiply(value, multiplier=2):
+        # A blocking function
+        time.sleep(0.1)
+        result = value * multiplier
+        time.sleep(0.1)
+        return result
+    
+    class Operations:
+        def instmultiply(self, value, multiplier=2):
+            return self.clsmultiply(value, multiplier)
+
+        @classmethod
+        def clsmultiply(cls, value, multiplier=2):
+            return cls.statmultiply(value, multiplier)
+
+        @staticmethod
+        def statmultiply(value, multiplier=2):
+            return multiply(value, multiplier)
+
+
+    async def test():
+        print("Blocking func")
+        result = await call_blocking(multiply, 2, multiplier=3)
+        print(result)
+        ops = Operations()
+        print("Blocking static method")
+        result = await call_blocking(ops.statmultiply, 3)
+        print(result)
+        print("Blocking class method")
+        result = await call_blocking(ops.clsmultiply, 3)
+        print(result)
+        print("Blocking instance method")
+        result = await call_blocking(ops.instmultiply, 3)
+        print(result)
+    
+    asyncio.run(test())
+</code></pre>
+    </noscript>
+</div>
+</div>
+<div class="section" id="about-the-pool-executor">
+<h2>About the pool executor</h2>
+<p>You may choose the <tt class="docutils literal">_executor</tt> being either <tt class="docutils literal">None</tt>, a <tt class="docutils literal">ThreadPoolexecutor</tt> or a
+<tt class="docutils literal">ProcessPoolExecutor</tt> instance. Just read the doc of <tt class="docutils literal">concurrent.futures</tt> to choose the best
+suited. And read the <a class="reference internal" href="#drawbacks">Drawbacks</a> below.</p>
+<p>Pool executor constructor take an optional <tt class="docutils literal">max_workers</tt> argument you should perhaps tune to
+obtain the best possible performances.</p>
+<p>My hints: choose a <tt class="docutils literal">ThreadPoolExecutor</tt> for I/O expensive functions, and a <tt class="docutils literal">ProcessPoolExecutor</tt>
+for heavy computation callables.</p>
+</div>
+<div class="section" id="drawbacks">
+<h2>Drawbacks</h2>
+<div class="section" id="using-threads">
+<h3>Using threads</h3>
+<p>You must be careful when playing with shared objects that could be modified by your blocking code
+and coroutines under event loop control. Avoid this when possible, or use locks.</p>
+<p>In addition lots of trird party packages expose resources that are not &quot;thread safe&quot;, thus cannot be
+invoked with this recipe.</p>
+</div>
+<div class="section" id="using-processes">
+<h3>Using processes</h3>
+<p>Processes do not share any global. Blocking code and coroutines must communicate via a
+<tt class="docutils literal">multiprocessing.Queue</tt>. That's not very comfortable.</p>
+</div>
+</div>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'awaiting-a-blocking-callable.html';
+        var disqus_url = 'http://glenfant.github.io/awaiting-a-blocking-callable.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

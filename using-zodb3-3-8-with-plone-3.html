@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Using ZODB3 3.8 with Plone 3</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/using-zodb3-3-8-with-plone-3.html" rel="bookmark"
+           title="Permalink to Using ZODB3 3.8 with Plone 3">Using ZODB3 3.8 with Plone 3</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2010-12-18T16:08:00+01:00">
+                Published: Sam 18 décembre 2010
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/plone.html">Plone</a> <a href="http://glenfant.github.io/tag/zope-2.html">Zope 2</a> </p>
+</footer><!-- /.post-info -->      <div class="section" id="background">
+<h2>Background</h2>
+<p>Lots of you are still in process of maintaining Plone 3 sites for yourself or
+customers and didn't go to Plone 4 for some good reason.</p>
+<p>The Plone 3 bundle is powered and tested with the latest Zope 2.10. This Zope
+version itself includes ZODB3 3.7. That has lots of issues that are now gone
+with later versions.</p>
+<p>But wait, it's not possible to use ZODB3 3.10.x since it seems it requires
+Python 2.6. ZODB3 3.9.x too has too many API changes and it seems that we need
+to go to a full Zope 2.11 to support this lates version.</p>
+<p>ZODB3 3.8 seems a reasonable choice to improve the persistence support of your
+Plone 3 apps.</p>
+<ul class="simple">
+<li>It compiles with Python 2.4- It has a lot of new features</li>
+<li>It has a lot of bugfixes</li>
+<li>It has lots of additional tests, thus should be more reliable</li>
+</ul>
+<p>Have a look at
+<a class="reference external" href="http://pypi.python.org/pypi/ZODB3/3.8.6#whats-new-in-zodb-3-8-6-2010-09-21">http://pypi.python.org/pypi/ZODB3/3.8.6#whats-new-in-zodb-3-8-6-2010-09-21</a>
+to see all the details.</p>
+<p>This sample buildout extends the standard &quot;buildout.cfg&quot; that comes with the
+ZopeSket template &quot;plone3_buildout&quot;, and replaces the ZODB3 that comes with
+Zope 2.1.0 by the ZODB3 3.8.6 egg, as well as some Zope 2 components that need
+an explicit upgrade to cope with this new ZODB3 version.</p>
+<hr class="docutils" />
+<div class="highlight"><pre><span></span><span class="k">[buildout]</span>
+<span class="c1"># buildout.cfg as built from plone3_buildout ZopeSkel template</span>
+<span class="na">extends</span> <span class="o">=</span> <span class="s">buildout.cfg</span>
+<span class="na">eggs +</span><span class="o">=</span><span class="s"></span>
+<span class="s">    zope.proxy</span>
+<span class="s">    ZODB3</span>
+<span class="s">    zodbcode</span>
+<span class="s">    tempstorage</span>
+
+<span class="k">[zope2]</span>
+<span class="na">skip-fake-eggs</span> <span class="o">=</span><span class="s"></span>
+<span class="s">    ZODB3</span>
+<span class="s">    zope.proxy</span>
+<span class="s">    zodbcode</span>
+<span class="s">    tempstorage</span>
+<span class="k">[versions]</span>
+<span class="c1"># Marked as additional fake egg in [zope2]</span>
+<span class="na">ZODB3</span> <span class="o">=</span> <span class="s">3.8.6</span>
+<span class="na">zope.proxy</span> <span class="o">=</span> <span class="s">3.4</span>
+<span class="na">zodbcode</span> <span class="o">=</span> <span class="s">3.4.0</span>
+<span class="na">tempstorage</span> <span class="o">=</span> <span class="s">2.11.3</span>
+</pre></div>
+</div>
+<hr class="docutils" />
+<div class="section" id="some-warnings-and-gotchas">
+<h2>Some warnings and gotchas</h2>
+<ul class="simple">
+<li>This configuration has been tested as simple instance deployment. I
+didn't yet test a ZEO cluster in such situation.</li>
+<li>This configuration has been tested successfully with only some well
+known third party extension : LinguaPlone, Collage, PloneFormgen,
+Ploneboard. Some third party Plone extensions that may play with ZODB
+inners should be tested in depth (run at least unit tests) before
+going in production.</li>
+</ul>
+<div class="section" id="other-things">
+<h3>Other things</h3>
+<p>If something is going wrong with this new ZODB, you can go back to the
+original ZODB3 that comes with Zope 2.10.x. Unless you have been playing with
+new storages and options that come with ZODB3 3.8.</p>
+<p>Any feedback of others who tried this recipe or similar ones is welcome.</p>
+</div>
+</div>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'using-zodb3-3-8-with-plone-3.html';
+        var disqus_url = 'http://glenfant.github.io/using-zodb3-3-8-with-plone-3.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

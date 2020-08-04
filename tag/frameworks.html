@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>Digital Snake and Family - Frameworks</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="http://glenfant.github.io/zcml-wadda-want-a-live-zcml-doc.html">ZCML Wadda ? Want a live ZCML doc ?</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2011-04-20T16:54:00+02:00">
+                Published: Mer 20 avril 2011
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/frameworks.html">Frameworks</a> <a href="http://glenfant.github.io/tag/zope-2.html">Zope 2</a> </p>
+</footer><!-- /.post-info --><div class="section" id="abstract">
+<h2>Abstract</h2>
+<p>ZCML is a great feature in Zope 2 since the first Five years. Exploring
+a well designed Python package starts with its ZCML files and its main
+&quot;interfaces.py&quot; module.</p>
+<p>But newbies as I have been and others have pain to remember the various
+ZCML directives available, as well as the detailed attributes of them.</p>
+<p>Of course there are some documentations in printed books or in various
+blogs or docs about most directives. But there's no central point
+(unless I didn't search correctly) where you can read the documentation
+for all ZCML directives available in <strong>your</strong> Zope 2 instance with third
+party components that could add new ZCML vocabulary.</p>
+<p>Of course, you may grep all &quot;meta.zcml&quot; files in your instance, search
+for the appropriate namespace, then the appropriate directive. And
+finally open the Python file that defines the schema of the mysterious
+ZCML, just as I explained in <a class="reference external" href="http://glenfant.wordpress.com/2008/05/09/doing-my-zcml/">another ZCML related blog
+post</a>.</p>
+<p>Grepping the &quot;zope.configuration&quot;, I hopefully found a magic function
+that provides a structured tree of all the registered ZCML directives
+well suited to provide a live documentation.</p>
+<p>After some hours of work and exploration, I'm proud to give to the Zope
+2 community
+&quot;<a class="reference external" href="http://pypi.python.org/pypi/aws.zope2zcmldoc">aws.zope2zcmldoc</a>&quot;
+that provides a live documentation on all ZCML namespaces, directives
+and subdirectives installed in your Zope 2 instance.</p>
+</div>
+<div class="section" id="some-screenshots">
+<h2>Some screenshots</h2>
+<div class="figure">
+<img alt="Available from the standard Zope control panel" src="http://glenfant.github.io/images/zcmldoc-control-panel.png" />
+<p class="caption">Available from the standard Zope control panel</p>
+</div>
+<div class="figure">
+<img alt="All namespaces" src="http://glenfant.github.io/images/zcmldoc-all-namespaces.png" />
+<p class="caption">All namespaces</p>
+</div>
+<div class="figure">
+<img alt="The &quot;browser&quot; namespace" src="http://glenfant.github.io/images/zcmldoc-browser-namespace.png" />
+<p class="caption">The &quot;browser&quot; namespace</p>
+</div>
+<div class="figure">
+<img alt="The &quot;pages&quot; directive" src="http://glenfant.github.io/images/zcmldoc-pages-directive.png" />
+<p class="caption">The &quot;pages&quot; directive</p>
+</div>
+<p>You can notice that the description text are translated in your favorite
+language when the translation is available.</p>
+<p><tt class="docutils literal">aws.zope2zcmldoc</tt> is the new companion of <tt class="docutils literal">Products.DocFinderTab</tt>,
+<tt class="docutils literal">plone.reload</tt>, <tt class="docutils literal">Products.Clouseau</tt> and <tt class="docutils literal">zope2.zodbbrowser</tt> (and perhaps
+others I forgot, sorry) to your development instances.</p>
+<p>Any feedback, is welcome. &nbsp;Enjoy !</p>
+<p>Ah yes, and many thanks to my actual employer <a class="reference external" href="http://www.alterway.fr">Alter
+Way</a> for sponsoring this piece of software.</p>
+</div>
+<p>There are <a href="http://glenfant.github.io/zcml-wadda-want-a-live-zcml-doc.html#disqus_thread">comments</a>.</p>                </article>
+            </aside><!-- /#featured -->
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

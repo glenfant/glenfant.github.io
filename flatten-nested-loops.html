@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>"Flatten" nested loops</title>
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
+        <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <nav><ul>
+                    <li><a href="http://glenfant.github.io/pages/about.html">About</a></li>
+                    <li class="active"><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="http://glenfant.github.io/flatten-nested-loops.html" rel="bookmark"
+           title="Permalink to "Flatten" nested loops">&quot;Flatten&quot; nested loops</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2017-07-31T17:01:00+02:00">
+                Published: Lun 31 juillet 2017
+        </abbr>
+
+        <address class="vcard author">
+                By                         <a class="url fn" href="http://glenfant.github.io/author/gilles-lenfant.html">Gilles Lenfant</a>
+        </address>
+<p>In <a href="http://glenfant.github.io/category/blog.html">Blog</a>.</p>
+<p>tags: <a href="http://glenfant.github.io/tag/python.html">Python</a> <a href="http://glenfant.github.io/tag/tip.html">Tip</a> </p>
+</footer><!-- /.post-info -->      <p>Nested loops are a common pattern in programmation in most programming languages. In Python,
+nested loops that have a long body must indent at each loop, that's wastes screen space and hides
+the fact the code is in an unique loop.</p>
+<p>In addition, <tt class="docutils literal">break</tt> statements in the outermost loop will continue with the next parent loop.
+If the intent is to break the outermost loop, the programmer needs to include these nested loops
+in an outer <tt class="docutils literal">try ... except</tt> structure that adds one more indentation level, or add a loop logic control.</p>
+<p>This recipe can be used in most cases you need nested loops that are merged in one. The &quot;black
+magic&quot;: merge the looping logic in a <a class="reference external" href="https://www.python.org/dev/peps/pep-0289/#reduction-functions">generator expression</a>.</p>
+<p>Before:</p>
+<div class="highlight"><pre><span></span><span class="n">must_break_all</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="k">for</span> <span class="n">obj1</span> <span class="ow">in</span> <span class="n">iterable1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">must_break_all</span><span class="p">:</span>
+        <span class="k">break</span>
+    <span class="k">for</span> <span class="n">obj2</span> <span class="ow">in</span> <span class="n">iterable2</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">must_break_all</span><span class="p">:</span>
+            <span class="k">break</span>
+        <span class="k">for</span> <span class="n">obj3</span> <span class="ow">in</span> <span class="n">iterable3</span><span class="p">:</span>
+            <span class="n">lots_of_data_processing</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">we_must_stop</span><span class="p">():</span>
+                <span class="n">must_break_all</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+             <span class="n">other_data_processing</span><span class="p">()</span>
+<span class="c1"># End all iterations</span>
+<span class="n">doing_something_else</span><span class="p">()</span>
+</pre></div>
+<p>Ugly, isn't it?</p>
+<p>In place of this I prefer use a generator expression that merges the looping logic, like this:</p>
+<div class="highlight"><pre><span></span><span class="n">merged_looping</span> <span class="o">=</span> <span class="p">((</span><span class="n">obj1</span><span class="p">,</span> <span class="n">obj2</span><span class="p">,</span> <span class="n">obj3</span><span class="p">)</span>
+                  <span class="k">for</span> <span class="n">obj1</span> <span class="ow">in</span> <span class="n">iterable1</span>
+                  <span class="k">for</span> <span class="n">obj2</span> <span class="ow">in</span> <span class="n">iterable2</span>
+                  <span class="k">for</span> <span class="n">obj3</span> <span class="ow">in</span> <span class="n">iterable3</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">obj1</span><span class="p">,</span> <span class="n">obj2</span><span class="p">,</span> <span class="n">obj3</span> <span class="ow">in</span> <span class="n">merged_looping</span><span class="p">:</span>
+    <span class="n">lots_of_data_processing</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">we_must_stop</span><span class="p">():</span>
+        <span class="k">break</span>
+     <span class="n">other_data_processing</span><span class="p">()</span>
+<span class="c1"># End all iterations</span>
+<span class="n">doing_something_else</span><span class="p">()</span>
+</pre></div>
+<p>And yes, you can put any number of consistent <tt class="docutils literal">for</tt> expressions in one generator expression.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p><strong>Exhausted generator</strong></p>
+<p class="last">You can't re-use <tt class="docutils literal">merged_looping</tt> as is after the last line of this example because it is
+potentially exhausted.</p>
+</div>
+
+    </div><!-- /.entry-content -->
+    <div class="comments">
+      <h2>Comments !</h2>
+      <div id="disqus_thread"></div>
+      <script type="text/javascript">
+        var disqus_shortname = 'monbloggithub';
+        var disqus_identifier = 'flatten-nested-loops.html';
+        var disqus_url = 'http://glenfant.github.io/flatten-nested-loops.html';
+        (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//monbloggithub.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+      </script>
+      <noscript>Please enable JavaScript to view the comments.</noscript>
+    </div>
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="blogroll">
+                        <h2>links</h2>
+                        <ul>
+                            <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
+                        </ul>
+                </div><!-- /.blogroll -->
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                            <li><a href="https://twitter.com/glenfant">twitter</a></li>
+                            <li><a href="https://github.com/glenfant">github</a></li>
+                            <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
+                            <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
+</body>
+</html>

@@ -3,17 +3,13 @@
 <head>
         <meta charset="utf-8" />
         <title>About</title>
-        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/main.css" />
+        <link rel="stylesheet" href="http://glenfant.github.io/theme/css/custom.css" />
         <link href="http://glenfant.github.io/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="Digital Snake and Family Atom Feed" />
-
-        <!--[if IE]>
-            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-        <![endif]-->
 </head>
 
 <body id="index" class="home">
         <header id="banner" class="body">
-                <h1><a href="http://glenfant.github.io/">Digital Snake and Family  <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
+                <h1><a href="http://glenfant.github.io/">Digital Snake and Family <strong>Gossips about (mostly) Python based technologies</strong></a></h1>
                 <nav><ul>
                     <li class="active"><a href="http://glenfant.github.io/pages/about.html">About</a></li>
                     <li><a href="http://glenfant.github.io/category/blog.html">Blog</a></li>
@@ -24,20 +20,92 @@
     
     <div class="section" id="what-s-this-site">
 <h2>What's this site?</h2>
-<p>You are actually reading my personal blog.</p>
+<p>You are actually reading my professional IT oriented blog, and professional site.</p>
 </div>
 <div class="section" id="who-s-that-guy">
 <h2>Who's that guy?</h2>
-<p>More to be said later...</p>
+<p>My name is <strong>Gilles Lenfant</strong>. I have been an IT engineer for years in various jobs in that order:</p>
+<ul class="simple">
+<li>Industrial critical real time embedded systems</li>
+<li>QA engineer</li>
+<li>DMS application lead developer</li>
+<li>DMS applications projects management</li>
+<li>QA freelance consultant</li>
+<li>Project manager and lead developer for (mostly) Plone CMS solutions</li>
+<li>Software architect and dead developer in automated DMS</li>
+<li>Python training teacher</li>
+</ul>
+<p>I have been mostly developing applications in these technologies in decreasing skill:</p>
+<ul class="simple">
+<li><strong>Python</strong>, Javascript, C, assemblers</li>
+<li>Web frameworks: <strong>Django</strong>, Flask, FastAPI, Zope, Tornado</li>
+<li>SQL: MySQL, PostgreSQL, SQLAlchemy ORM</li>
+<li>noSQL: Redis, <a class="reference external" href="http://exist-db.org/exist/apps/homepage/index.html">eXistdb</a>,
+<a class="reference external" href="http://www.marklogic.com/">MarkLogic</a>.</li>
+<li>XML: XPath, XSLT, XQuery</li>
+<li>Others: Vagrant, Docker, Ansible, Sphinx, Robotframework,
+Gitlab-CI, Jenkins, ...</li>
+<li>QA standards: DO 178, DOD 2167</li>
+</ul>
+</div>
+<div class="section" id="latest-projects">
+<h2>Latest projects</h2>
+<p>This is  a short list of big projects I have been proud to be involved in over these last years.</p>
+<div class="section" id="energisme">
+<h3>Energisme</h3>
+<p><a class="reference external" href="https://energisme.com/">Energisme</a> is a small consultant company that publishes a Web platform
+that helps the customers to optimize their energy costs (electricity, gas, water, heat, ...) with a
+Web platform that leverages machine learning and big data pipelines.</p>
+<p>I contributed as lead developer in a team of 3 to feed the machine learning part with invoice data
+coming from energy provider (EDF, Engie, ...) in various formats (PDF, CSV, XML, ...)</p>
+<dl class="docutils">
+<dt>Technical stack:</dt>
+<dd>Python, Kafka, XML, MySQL, Azure Datalake, Gitlab-CI, Docker.</dd>
+</dl>
+</div>
+<div class="section" id="mappy">
+<h3>Mappy</h3>
+<p><a class="reference external" href="https://fr.mappy.com/">Mappy</a> is one of the european leaders of maps and roadmaps services.</p>
+<p>I'm actually member of the &quot;route&quot; team that draws journeys between cities, finds public transport solutions (train, bus), and draws roadmaps.</p>
+<dl class="docutils">
+<dt>Technical stack:</dt>
+<dd>Python, Tornado, PostGreSQL.</dd>
+</dl>
+</div>
+<div class="section" id="evalubik">
+<h3>EvalUbik</h3>
+<p>EvalUbik is an IoT security certification assistant that automates most IoT security hackings
+(passive sniffing, crypting method and key, password stealing, active identity theft, ...).
+Actually, LoRa, Sigfox, Zigbee, Bluetooth-LE devices automated security tests are supported. More to
+come in the future.</p>
+<p>EvalUbik is ran by <a class="reference external" href="https://www.digitalsecurity.fr/en/">Digital Security</a>, a company of IT and
+IoT security consultants.</p>
+<dl class="docutils">
+<dt>Technical stack:</dt>
+<dd>Python, Django REST framework, Celery/RabbitMQ, Autobahn + Crossbar WAMP router, AngularJS,
+Docker.</dd>
+</dl>
+</div>
+<div class="section" id="assemblee-nationale-french-parliament">
+<h3>Assemblée nationale (french parliament)</h3>
+<p>Loix is a distributed application that agglomerates, filters, qualifies, adds semantics to data
+provided by various business application (mostly XML) into a structured documents database. That
+database being source of documents for various downstream applications, including OpenData
+publisher.</p>
+<dl class="docutils">
+<dt>Technical stack:</dt>
+<dd>Python, Flask, XML, ZeroMQ, Redis, eXistdb with XQuery, then MarkLogic with XQuery and NodeJS.</dd>
+</dl>
+</div>
 </div>
 
 </section>
         <section id="extras" class="body">
                 <div class="blogroll">
-                        <h2>blogroll</h2>
+                        <h2>links</h2>
                         <ul>
                             <li><a href="http://glenfant.wordpress.com">Previous blog</a></li>
-                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (fr)</a></li>
+                            <li><a href="http://gillux.blogspot.fr/">Social / cultural blog (french)</a></li>
                         </ul>
                 </div><!-- /.blogroll -->
                 <div class="social">
@@ -48,6 +116,7 @@
                             <li><a href="https://twitter.com/glenfant">twitter</a></li>
                             <li><a href="https://github.com/glenfant">github</a></li>
                             <li><a href="https://fr.linkedin.com/in/gilles-lenfant-57a9a810">linkedin</a></li>
+                            <li><a href="https://stackoverflow.com/users/826736/glenfant">stackoverflow</a></li>
                             <li><a href="https://www.facebook.com/gilles.lenfant">facebook</a></li>
                         </ul>
                 </div><!-- /.social -->
@@ -61,5 +130,14 @@
                 <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
         </footer><!-- /#contentinfo -->
 
+<script type="text/javascript">
+    var disqus_shortname = 'monbloggithub';
+    (function () {
+        var s = document.createElement('script'); s.async = true;
+        s.type = 'text/javascript';
+        s.src = 'https://' + disqus_shortname + '.disqus.com/count.js';
+        (document.getElementsByTagName('HEAD')[0] || document.getElementsByTagName('BODY')[0]).appendChild(s);
+    }());
+</script>
 </body>
 </html>
